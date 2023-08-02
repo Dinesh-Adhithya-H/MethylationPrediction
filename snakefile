@@ -41,7 +41,7 @@ rule download_cram:
 rule convert_cram_to_bam:
     input:
         cram=FILES_DIR+"{sample}.cram",
-        fasta_file=config['HOME_DIR']+config['FASTA_FILE_DIR']
+        fasta_file=config['FASTA_FILE_DIR']
     output:
         FILES_DIR+"{sample}.bam"
     params:
