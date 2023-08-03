@@ -1,8 +1,7 @@
 HOME_DIR: "/project/ReadStatistics-data/Snakemake/" # where your codes and snakefile sits.
 
 FILES_DIR: "BAM_FILES/" # The directory where the bam files live.
-MODEL_DIR: "MODELS/" # The directory of the machine learning model to predict methylation state of CpG 
-                                                            # Islands
+MODEL_DIR: "MODELS/" # The directory of the machine learning model to predict methylation state of CpG Islands
 OUTPUT_DIR: "OUTPUT/" # The directory where the output files are stored at.
 PYTHON_DIR: "PYTHON/" # The directory of the python files
 
