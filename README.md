@@ -15,7 +15,6 @@ Using the information of dinucleotide around which reads break during sequencing
 
 ## Installation
 
-''' sh
+```sh
   git clone https://github.com/Dinesh-Adhithya-H/MethylationPrediction.git
-'''
-
+```
