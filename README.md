@@ -29,7 +29,11 @@ Using the information of dinucleotide around which reads break during sequencing
 FASTA_FILE_DIR: "Enter the directory of the fasta file"
 HOME_DIR: "Home directory where the package sits in your local machine"
 ```
-3. Run the snakemake file.
+3. Go to the directory containing the git clone
+```sh
+  cd MethylationPrediction
+```
+4. Run the snakemake file.
 ``` sh
   snakemake --cores 10
 ```
