@@ -15,6 +15,12 @@ Using the information of dinucleotide around which reads break during sequencing
 
 ## Installation
 
+1. clone the GitHub repository to your local machine.
 ```sh
   git clone https://github.com/Dinesh-Adhithya-H/MethylationPrediction.git
 ```
+2. edit the config file, such as the right directory of expected files, such as the fasta file of the reference genome are found.
+3. run the snakemake file.
+""" sh
+  snakemake --cores 10
+"""
