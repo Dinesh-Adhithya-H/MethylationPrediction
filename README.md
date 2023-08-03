@@ -21,6 +21,6 @@ Using the information of dinucleotide around which reads break during sequencing
 ```
 2. edit the config file, such as the right directory of expected files, such as the fasta file of the reference genome are found.
 3. run the snakemake file.
-""" sh
+``` sh
   snakemake --cores 10
-"""
+```
