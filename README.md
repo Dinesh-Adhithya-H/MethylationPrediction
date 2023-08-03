@@ -25,6 +25,11 @@ Using the information of dinucleotide around which reads break during sequencing
   git clone https://github.com/Dinesh-Adhithya-H/MethylationPrediction.git
 ```
 2. edit the config file, such as the right directory of expected files, such as the fasta file of the reference genome are found.
+``` yaml
+FASTA_FILE_DIR: "Enter the directory of the fasta file"
+HOME_DIR: "Home directory where the package sits in your local machine"
+```
+
 3. run the snakemake file.
 ``` sh
   snakemake --cores 10
