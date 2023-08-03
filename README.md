@@ -14,7 +14,7 @@ Using the information of dinucleotide around which reads break during sequencing
 7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
 
 ## Snakemake workflow
-<img src="https://github.com/Dinesh-Adhithya-H/MethylationPrediction/blob/main/dag1024_1.jpg"  width="60%" height="30%">
+<img src="https://github.com/Dinesh-Adhithya-H/MethylationPrediction/blob/main/dag1024_1.jpg"  width="40%" height="20%">
 
 
 
