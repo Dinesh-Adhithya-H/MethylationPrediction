@@ -16,8 +16,6 @@ Using the information of dinucleotide around which reads break during sequencing
 ## Snakemake workflow
 <img src="https://github.com/Dinesh-Adhithya-H/MethylationPrediction/blob/main/dag1024_1.jpg"  width="40%" height="20%">
 
-
-
 ## Installation
 
 1. Clone the GitHub repository to your local machine.
