@@ -1,0 +1,7 @@
+.snakemake
+.ipynb_checkpoints
+.fa
+resources/*.bam
+resources/*.cram
+results/*/*.bed
+results/*/*.csv
