@@ -15,7 +15,7 @@ Using the information of dinucleotide around which reads break during sequencing
 
 ## Requirements
 
-```
+```sh
 # Create a virtual environment (Python 3)
 python3 -m venv venv
 
