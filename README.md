@@ -20,7 +20,7 @@ Using the information of dinucleotide around which reads break during sequencing
 python3 -m venv venv
 
 # Activate the virtual environment
-source venv/bin/activate   # On Windows: venv\Scripts\activate
+source venv/bin/activate   
 
 # Install dependencies from requirements.txt
 pip install -r requirements.txt
