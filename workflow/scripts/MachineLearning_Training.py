@@ -3,7 +3,8 @@ from MachineLearning import *
 
 model_dir=sys.argv[1]
 finalfile_dir=sys.argv[2]
-methylation_pred_dir=sys.argv[3]
+methylation_annotation=sys.argv[3]
+
 
 ML=MachineLearning()
-ML.predict_save(model_dir,finalfile_dir,methylation_pred_dir)
+ML.train_save(model_dir,finalfile_dir,methylation_annotation)

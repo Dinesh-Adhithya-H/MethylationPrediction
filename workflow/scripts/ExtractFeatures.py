@@ -1,7 +1,5 @@
-import pandas as pd
-import numpy as np
-import os
-    
+from __init__ import *
+
 def get_nid():
     nid={}
     index=0
