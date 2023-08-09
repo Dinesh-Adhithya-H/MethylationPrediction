@@ -13,6 +13,19 @@ Using the information of dinucleotide around which reads break during sequencing
 6. Then a finalfile.csv is generated, with contains the coordinates of the CpG islands and 16 feature values, each corresponding to a dinucleotide.
 7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
 
+## Requirements
+
+```
+# Create a virtual environment (Python 3)
+python3 -m venv venv
+
+# Activate the virtual environment
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+
+# Install dependencies from requirements.txt
+pip install -r requirements.txt
+```
+
 ## Installation
 
 1. Clone the GitHub repository to your local machine.
