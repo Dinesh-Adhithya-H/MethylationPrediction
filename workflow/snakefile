@@ -1,14 +1,58 @@
 # Snakefile
+configfile: "config/config.yaml"
+
+OUTPUT_DIR=config['OUTPUT_DIR']
+FILES_DIR=config['FILES_DIR']
 
 # Prompt user to choose mode
-mode = snakemake.config.get("mode", "")
+mode = config['MODE']
 
 # Check if the chosen mode is valid
 valid_modes = ["train", "predict"]
 if mode not in valid_modes:
     raise ValueError(f"Invalid mode selected. Please choose one of: {', '.join(valid_modes)}")
 
-# Execute the selected mode's Snakefile using exec()
-with open(f"{mode}.smk") as f:
-    code = compile(f.read(), f"rules/{mode}.smk", 'exec')
-    exec(code, globals(), locals())
+if mode == "train":
+    include: "rules/train.smk"
+
+    OUTPUT_DIR=config['OUTPUT_DIR']
+    FILES_DIR=config['FILES_DIR']
+    sample_download_links = [i.rstrip('\n').replace('ftp:/','http://') for i in  open(config['TXT_FILE_DIR']).readlines()]
+    samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in  open(config['TXT_FILE_DIR']).readlines()]
+
+    rule all:
+        input:
+            # Expand function generates output file paths for each sample in 'samples'
+            OUTPUT_DIR+"dependencies_check.txt",
+            config['FASTA_FILE_DIR'],
+            expand(FILES_DIR+"{sample}.bam", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples),
+            config['MODEL_DIR']
+
+elif mode == "predict":
+    include: "rules/predict.smk"
+    
+    OUTPUT_DIR=config['OUTPUT_DIR']
+    FILES_DIR=config['FILES_DIR']
+
+    sample_download_links = [i.rstrip('\n').replace('ftp:/','http://') for i in  open(config['TXT_FILE_DIR']).readlines()]
+    samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in  open(config['TXT_FILE_DIR']).readlines()]
+
+    rule all:
+        input:
+            # Expand function generates output file paths for each sample in 'samples'
+            OUTPUT_DIR+"dependencies_check.txt",
+            config['FASTA_FILE_DIR'],
+            expand(FILES_DIR+"{sample}.bam", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/methylation_outputs.csv", sample=samples)
