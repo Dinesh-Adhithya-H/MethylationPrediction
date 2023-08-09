@@ -13,9 +13,6 @@ Using the information of dinucleotide around which reads break during sequencing
 6. Then a finalfile.csv is generated, with contains the coordinates of the CpG islands and 16 feature values, each corresponding to a dinucleotide.
 7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
 
-## Snakemake workflow
-<img src="https://github.com/Dinesh-Adhithya-H/MethylationPrediction/blob/main/dag1024_1.jpg"  width="40%" height="20%">
-
 ## Installation
 
 1. Clone the GitHub repository to your local machine.
