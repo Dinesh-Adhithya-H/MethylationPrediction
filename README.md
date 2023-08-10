@@ -23,7 +23,7 @@ python3 -m venv venv
 ```sh
 source venv/bin/activate
 ```
-3. Install dependencies from requirements.txt
+3. Install dependencies from python_requirements.txt
 ```sh
 pip install -r workflow/envs/python_requirements.txt
 ```
