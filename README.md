@@ -15,14 +15,16 @@ Using the information of dinucleotide around which reads break during sequencing
 
 ## Requirements
 Run the bash snippets below to create a virtual Python environment with the necessary modules for this tool.
+1. Create a virtual environment (Python 3)
 ```sh
-# Create a virtual environment (Python 3)
 python3 -m venv venv
-
-# Activate the virtual environment
-source venv/bin/activate   
-
-# Install dependencies from requirements.txt
+```
+2. Activate the virtual environment
+```sh
+source venv/bin/activate
+```
+3. Install dependencies from requirements.txt
+```sh
 pip install -r workflow/envs/python_requirements.txt
 ```
 
