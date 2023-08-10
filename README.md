@@ -14,7 +14,13 @@ Using the information of dinucleotide around which reads break during sequencing
 7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
 
 ## Requirements
-Run the bash snippets below to create a virtual Python environment with the necessary modules for this tool.
+Please run the following command to check if necessary tools such as samtools, bedtools, snakemake, and python are installed.
+
+```sh
+bash workflow/envs/check_tools.sh
+```
+
+Please run the bash snippets below to create a virtual Python environment with the necessary modules for this tool.
 1. Create a virtual environment (Python 3)
 ```sh
 python3 -m venv venv
