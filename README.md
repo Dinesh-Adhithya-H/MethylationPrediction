@@ -13,6 +13,17 @@ Using the information of dinucleotide around which reads break during sequencing
 6. Then a finalfile.csv is generated, with contains the coordinates of the CpG islands and 16 feature values, each corresponding to a dinucleotide.
 7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
 
+## Installation
+
+1. Clone the GitHub repository to your local machine.
+```sh
+  git clone https://github.com/Dinesh-Adhithya-H/MethylationPrediction.git
+```
+2. Go to the directory containing the git clone
+```sh
+  cd MethylationPrediction
+```
+
 ## Requirements
 Please run the following command to check if necessary tools such as samtools, bedtools, snakemake, and python are installed.
 
@@ -34,23 +45,15 @@ source venv/bin/activate
 pip install -r workflow/envs/python_requirements.txt
 ```
 
-## Installation
+## Usage
 
-1. Clone the GitHub repository to your local machine.
-```sh
-  git clone https://github.com/Dinesh-Adhithya-H/MethylationPrediction.git
-```
-2. Go to the directory containing the git clone
-```sh
-  cd MethylationPrediction
-```
-3. Edit the config file 'config.yaml', to set up the mode to ensure the right directories of the dependencies is used.
+1. Edit the config file 'config.yaml', to set up the mode to ensure the right directories of the dependencies is used.
 ``` yaml
 FASTA_FILE_DIR: "Enter the directory of the fasta file"
 HOME_DIR: "Home directory where the package sits in your local machine"
 MODE: "train or predict mode"
 ```
-4. Run the snakemake file.
+2. Run the snakemake file.
 ``` sh
   snakemake --cores 10
 ```
