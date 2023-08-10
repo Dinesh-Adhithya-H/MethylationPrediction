@@ -44,10 +44,11 @@ pip install -r workflow/envs/python_requirements.txt
 ```sh
   cd MethylationPrediction
 ```
-3. Edit the config file 'config.yaml', such that the right directory of the fasta file of the reference genome is found.
+3. Edit the config file 'config.yaml', to set up the mode to ensure the right directories of the dependencies is used.
 ``` yaml
 FASTA_FILE_DIR: "Enter the directory of the fasta file"
 HOME_DIR: "Home directory where the package sits in your local machine"
+MODE: "train or predict mode"
 ```
 4. Run the snakemake file.
 ``` sh
