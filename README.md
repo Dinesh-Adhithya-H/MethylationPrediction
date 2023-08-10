@@ -23,7 +23,7 @@ python3 -m venv venv
 source venv/bin/activate   
 
 # Install dependencies from requirements.txt
-pip install -r requirements.txt
+pip install -r workflow/envs/python_requirements.txt
 ```
 
 ## Installation
