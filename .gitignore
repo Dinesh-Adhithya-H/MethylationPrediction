@@ -5,3 +5,4 @@ resources/*.bam
 resources/*.cram
 results/*/*.bed
 results/*/*.csv
+venv
