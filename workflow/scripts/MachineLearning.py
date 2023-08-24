@@ -86,13 +86,13 @@ class MachineLearning:
         model = load(model_dir) 
         data=pd.read_csv(finalfile_dir,low_memory=False)
         x=self.data_extraction_for_ML_predict(data)
-        data['methylation_level']=model.predict_proba(x)[:,1]
+        data['methylation_level']=model.predict_proba(x)[:,1].round(3)
         data[['chr','start','end','methylation_level']].to_csv(methylation_pred_dir,index=False)
     
     def train_save(self,model_dir,finalfile_dir,methylation_annotation):
 
         features = pd.read_csv(finalfile_dir,low_memory=False)
-        annotation = pd.read_csv(methylation_annotation,low_memory=False)
+        annotation = pd.read_csv(methylation_annotation,low_memory=False, sep='\t')
 
         annotation['chr'] = annotation['chr'].astype('str')
         annotation['start'] = annotation['start'].astype('int64')
