@@ -32,7 +32,7 @@ if mode == "train":
             expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples),
-            config['MODEL_DIR']
+            config['MODEL_DIR'] + "model.joblib"
 
 elif mode == "predict":
     include: "rules/predict.smk"
