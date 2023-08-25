@@ -120,7 +120,7 @@ rule bam_process:
         # Additional input files required for processing
         CpG_isl_bed_file=config['CpG_ISL_BED_FILE_DIR'],
         fasta_file=config['FASTA_FILE_DIR'],
-        remove_reads=config['REMOVE_READS_DIR']
+        remove_reads=config['constants']['REMOVE_READS_DIR']
     output: 
         # Output files for each sample after processing
         output_reads=OUTPUT_DIR+"{sample}/output_reads.bed",
