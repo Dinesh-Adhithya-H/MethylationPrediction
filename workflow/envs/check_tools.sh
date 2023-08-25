@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify required versions
-required_python_version="3.10.10"
+required_python_version="3.5"
 required_snakemake_version="7.25.2"
 required_samtools_version="1.18"
 required_bedtools_version="2.30.0"
