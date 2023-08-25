@@ -134,19 +134,23 @@ rule bam_process:
         # Step 1: Extract reads from BAM file and save as output.bed
         samtools view -f 2 -F 3868 {input.bam_file_dir} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
         
-        # Step 2: Extract reads which belong from chr1 to chr23
+	      # Step 2: Unify the way of chromosome labeling
+        sed -i 's/^chr//g' {output.output_bed}
+        sed -i 's/^/chr/g' {output.output_bed}
+
+        # Step 3: Extract reads which belong from chr1 to chr22 and chrX
         awk '($1 ~ /^chr([1-9]|1[0-9]|2[0-3])$/)' {output.output_bed} > {output.filtered_output_bed}
 
-        # Step 3: Remove reads in remove_reads.bed from output.bed and save as output3.bed
+        # Step 4: Remove reads in remove_reads.bed from output.bed and save as output3.bed
         grep -vFf {input.remove_reads} {output.filtered_output_bed} > {output.output3}
 
-        # Step 4: Perform bedtools intersect with CpG island bed file and save as output_reads.bed
+        # Step 5: Perform bedtools intersect with CpG island bed file and save as output_reads.bed
         bedtools intersect -b {input.CpG_isl_bed_file} -a {output.output3} -wa -wb > {output.output_reads}
 
-        # Step 5: Perform bedtools intersect with CpG island bed file and save as output_reads2.bed
+        # Step 6: Perform bedtools intersect with CpG island bed file and save as output_reads2.bed
         bedtools intersect -b {input.CpG_isl_bed_file} -a {output.output3} -wa > {output.output_reads2}
 
-        # Step 6: Extract fasta sequences using bedtools getfasta and save as output.fasta
+        # Step 7: Extract fasta sequences using bedtools getfasta and save as output.fasta
         bedtools getfasta -fi {input.fasta_file} -bed {output.output_reads2} > {output.output_fasta}
         """
 
@@ -187,4 +191,4 @@ rule download_fasta_file:
     params: link = config['FASTA_FILE_LINK']
     shell:
         """ wget -O {output.fasta} {params.link} 
-        samtools faidx {output.fasta}"""
+            samtools faidx {output.fasta}"""

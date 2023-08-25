@@ -83,6 +83,7 @@ class MachineLearning:
         x_norm =StandardScaler().fit_transform(x_32_norm)
    
         return x_norm
+  
     def predict_save(self,model_dir,finalfile_dir,methylation_pred_dir,ratio='None'):
         if ratio == 'None':
             (model,ratio) = load(model_dir) 
@@ -95,10 +96,11 @@ class MachineLearning:
         data['methylation_level_threshold_adjusted']=data['methylation_level'].apply(lambda x: 1 if x>=(1-ratio) else 0)
         data[['chr','start','end','methylation_level','methylation_level_threshold_adjusted']].to_csv(methylation_pred_dir,index=False,sep="\t")
     
+    
     def train_save(self,model_dir,finalfile_dir,methylation_annotation):
 
-        features = pd.read_csv(finalfile_dir,low_memory=False,sep="\t")
-        annotation = pd.read_csv(methylation_annotation,low_memory=False,sep="\t")
+        features = pd.read_csv(finalfile_dir,low_memory=False)
+        annotation = pd.read_csv(methylation_annotation,low_memory=False, sep='\t')
 
         annotation['chr'] = annotation['chr'].astype('str')
         annotation['start'] = annotation['start'].astype('int64')
@@ -112,5 +114,5 @@ class MachineLearning:
 
         x,y,ratio=self.data_extraction_for_ML(final_file)
         clf_rf=self.random_forest_model(x,y)
-
+        
         dump((clf_rf,ratio), model_dir)
