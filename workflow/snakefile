@@ -23,16 +23,17 @@ if mode == "train":
     rule all:
         input:
             # Expand function generates output file paths for each sample in 'samples'
-            OUTPUT_DIR+"dependencies_check.txt",
             config['FASTA_FILE_DIR'],
+            OUTPUT_DIR+'output_cpg.fasta',
             expand(FILES_DIR+"{sample}.bam", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples),
-            config['MODEL_DIR'] + "model.joblib"
+            expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
+            config['MODEL_DIR']
+
 
 elif mode == "predict":
     include: "rules/predict.smk"
@@ -43,16 +44,42 @@ elif mode == "predict":
     sample_download_links = [i.rstrip('\n').replace('ftp:/','http://') for i in  open(config['TXT_FILE_DIR']).readlines()]
     samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in  open(config['TXT_FILE_DIR']).readlines()]
 
-    rule all:
-        input:
-            # Expand function generates output file paths for each sample in 'samples'
-            OUTPUT_DIR+"dependencies_check.txt",
-            config['FASTA_FILE_DIR'],
-            expand(FILES_DIR+"{sample}.bam", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/methylation_outputs.csv", sample=samples)
+    if config['SAMPLE_TYPES']=="SAME":
+        rule all:
+            input:
+                # Expand function generates output file paths for each sample in 'samples'
+                config['FASTA_FILE_DIR'],
+                OUTPUT_DIR+'output_cpg.fasta',
+                expand(FILES_DIR+"{sample}.bam", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
+
+                OUTPUT_DIR+"combined_final_file.bed",
+                OUTPUT_DIR+"combined_methylation_outputs.bed",
+
+                OUTPUT_DIR+"summary_with_combined_final_file.bed"
+
+    elif config['SAMPLE_TYPES']=="DIFFERENT":
+        rule all:
+            input:
+                config['FASTA_FILE_DIR'],
+                OUTPUT_DIR+'output_cpg.fasta',
+                expand(FILES_DIR+"{sample}.bam", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
+
+                OUTPUT_DIR+"summary.bed"
+
+    else:
+        raise ValueError(f"Invalid sample type selected. Please choose one of: SAME, DIFFERENT")
+

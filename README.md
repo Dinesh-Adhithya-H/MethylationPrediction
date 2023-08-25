@@ -52,6 +52,8 @@ pip install -r workflow/envs/python_requirements.txt
 FASTA_FILE_DIR: "Enter the directory of the fasta file"
 HOME_DIR: "Home directory where the package sits in your local machine"
 MODE: "train or predict mode"
+RATIO: "Please enter None or a float that indicates the ratio of methylated samples in the dataset"
+SAMPLE_TYPES: "SAME/DIFFERENT"
 ```
 2. Run the snakemake file.
 ``` sh

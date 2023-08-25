@@ -15,9 +15,9 @@ samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in
 rule get_model:
     input:
         # Input Python script for prediction
-        training_py=config['PYTHON_DIR']+"MachineLearning_Training.py",
+        training_py=config['constants']['PYTHON_DIR']+"MachineLearning_Training.py",
         # Input final CSV file for each sample
-        finalfile_dir=OUTPUT_DIR+"combined_final_file.csv",
+        finalfile_dir=OUTPUT_DIR+"combined_final_file.bed",
         # Methylation annotation file
         annotation_file=config['METHYLATION_ANNOTATION_DIR'],
     output:
@@ -31,49 +31,19 @@ rule get_model:
 
 rule combine_final_file:
     input:
-        expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples)
+        expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples)
     output:
-        combined_final_file=OUTPUT_DIR+"combined_final_file.csv"
+        combined_final_file=OUTPUT_DIR+"combined_final_file.bed"
     run:
         import pandas as pd
         df_combined = pd.DataFrame()
         for i in input:
-            data=pd.read_csv(i,low_memory=False)
+            data=pd.read_csv(i,low_memory=False,sep="\t")
             df_combined = pd.concat([data,df_combined])
         df_combined = df_combined.groupby(by=["chr","start","end"]).mean()
-        df_combined.to_csv(output.combined_final_file,index=True)
+        df_combined.to_csv(output.combined_final_file,index=True,sep="\t")
 
-rule check_dependencies:
-    """
-    Rule to check if samtools, bedtools, and python are installed.
-    """
-    output:
-        OUTPUT_DIR+"dependencies_check.txt"
-    run:
-        # List of dependencies to check
-        dependencies = ["samtools", "bedtools", "python"]
-
-        # Check each dependency
-        missing_dependencies = []
-        for dependency in dependencies:
-            try:
-                # Try to execute the command and see if it's present
-                subprocess.run(f"{dependency} --version", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                # Command execution failed, so the tool is not installed
-                missing_dependencies.append(dependency)
-
-        # Write the result to the output file
-        with open(output[0], "w") as f:
-            if missing_dependencies:
-                f.write("The following dependencies are missing:\n")
-                for dep in missing_dependencies:
-                    f.write(f"{dep}\n")
-            else:
-                f.write("All dependencies are installed.\n")
-
-
-
+# Define the rule 'download_bam_or_cram' for downloading BAM or CRAM files
 rule download_bam_or_cram:
     params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)]
     output: FILES_DIR+"{sample}.bam"
@@ -110,9 +80,9 @@ rule bam_process:
         # Step 1: Extract reads from BAM file and save as output.bed
         samtools view -f 2 -F 3868 {input.bam_file_dir} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
         
-	# Step 2: Unify the way of chromosome labeling
-	sed -i 's/^chr//g' {output.output_bed}
-	sed -i 's/^/chr/g' {output.output_bed}
+        # Step 2: Unify the way of chromosome labeling
+        sed -i 's/^chr//g' {output.output_bed}
+        sed -i 's/^/chr/g' {output.output_bed}
 	
         # Step 3: Extract reads which belong from chr1 to chr22 and chrX
         awk '($1 ~ /^chr([1-9]|1[0-9]|2[0-3])$/)' {output.output_bed} > {output.filtered_output_bed}
@@ -145,7 +115,7 @@ rule generate_output_cpg:
 rule bed_process:
     input:
         # Input Python script for processing
-        python_code=config['PYTHON_DIR']+"FeatureExtraction.py",
+        python_code=config['constants']['PYTHON_DIR']+"FeatureExtraction.py",
         # Input fasta data directory for each sample
         dinucletide_data_dir=OUTPUT_DIR+"{sample}/output.fasta",
         # Additional input files required for processing
@@ -153,12 +123,12 @@ rule bed_process:
         overlap_cpg_dinucleotide_dir=OUTPUT_DIR+"{sample}/output_reads.bed"
     output:
         # Output CSV file for each sample after processing
-        OUTPUT_DIR+"{sample}/final_file.csv"
+        OUTPUT_DIR+"{sample}/final_file.bed"
     params:
         # Parameter specifying output directory for each sample
         output_dir_name=OUTPUT_DIR+"{sample}/"
     shell:
-        # Execute the Python script to process fasta data and generate final CSV file
+        # Execute the Python script to process fasta data and generate final bed file
         "python {input.python_code} {input.dinucletide_data_dir} {input.cpg_island_data_dir} {input.overlap_cpg_dinucleotide_dir} {params.output_dir_name}"
 
 
@@ -166,5 +136,5 @@ rule download_fasta_file:
     output: fasta = config['FASTA_FILE_DIR'], index = config['FASTA_FILE_DIR']+".fai"
     params: link = config['FASTA_FILE_LINK']
     shell:
-        """ wget {params.link}
+        """ wget -O {output.fasta} {params.link}
         samtools faidx {output.fasta}"""
