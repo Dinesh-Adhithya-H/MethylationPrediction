@@ -15,63 +15,88 @@ samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in
 rule get_prediction:
     input:
         # Input Python script for prediction
-        prediction_py=config['PYTHON_DIR']+"MachineLearning_Prediction.py",
+        prediction_py=config['constants']['PYTHON_DIR']+"MachineLearning_Prediction.py",
         # Input trained model file
-        model_dir=config['MODEL_DIR']+'model.joblib',
+        model_dir=config['MODEL_DIR'],
         # Input final CSV file for each sample
-        finalfile_dir=OUTPUT_DIR+"{sample}/final_file.csv"
+        finalfile_dir=OUTPUT_DIR+"{sample}/final_file.bed"
+    params:
+        # Ratio of methylated islands to total islands
+        ratio = config['RATIO']
     output:
         # Output CSV file with methylation predictions for each sample
-        methylation_pred_dir=OUTPUT_DIR+"{sample}/methylation_outputs.csv"
+        methylation_pred_dir=OUTPUT_DIR+"{sample}/methylation_outputs.bed"
     shell:
         # Execute the Python script to make methylation predictions using the model
-        "python {input.prediction_py} {input.model_dir} {input.finalfile_dir} {output.methylation_pred_dir}"
+        "python {input.prediction_py} {input.model_dir} {input.finalfile_dir} {output.methylation_pred_dir} {params.ratio}"
 
 # Define the rule 'combine_final_file' for combining combine_final_file outputs for all samples, to create a pooled dataset.
 
 rule combine_final_file:
     input:
-        expand(OUTPUT_DIR+"{sample}/final_file.csv", sample=samples)
+        expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples)
     output:
-        combined_final_file=OUTPUT_DIR+"combined_final_file.csv"
+        combined_final_file=OUTPUT_DIR+"combined_final_file.bed"
     run:
         import pandas as pd
-        df_combined = pd.DataFrame(columns=['chr','start','end'])
+        df_combined = pd.DataFrame()
         for i in input:
-            data=pd.read_csv(i,low_memory=False)
-            df_combined = pd.merge(data,df_combined,on=['chr','start','end'], how="outer")
-        df_combined.to_csv(output.combined_methylation_outputs,index=False)
+            data=pd.read_csv(i,low_memory=False,sep="\t")
+            df_combined = pd.concat([data,df_combined])
+        df_combined = df_combined.groupby(by=["chr","start","end"]).mean()
+        df_combined.to_csv(output.combined_final_file,index=True,sep="\t")
 
-rule check_dependencies:
-    """
-    Rule to check if samtools, bedtools, and python are installed.
-    """
+
+
+rule get_prediction_combine_final_file:
+    input:
+        # Input Python script for prediction
+        prediction_py=config['constants']['PYTHON_DIR']+"MachineLearning_Prediction.py",
+        # Input trained model file
+        model_dir=config['MODEL_DIR'],
+        # Input final CSV file for each sample
+        finalfile_dir=OUTPUT_DIR+"combined_final_file.bed"
+    params:
+        # Ratio of methylated islands to total islands
+        ratio = config['RATIO']
     output:
-        OUTPUT_DIR+"dependencies_check.txt"
-    run:
-        # List of dependencies to check
-        dependencies = ["samtools", "bedtools", "python"]
-
-        # Check each dependency
-        missing_dependencies = []
-        for dependency in dependencies:
-            try:
-                # Try to execute the command and see if it's present
-                subprocess.run(f"{dependency} --version", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                # Command execution failed, so the tool is not installed
-                missing_dependencies.append(dependency)
-
-        # Write the result to the output file
-        with open(output[0], "w") as f:
-            if missing_dependencies:
-                f.write("The following dependencies are missing:\n")
-                for dep in missing_dependencies:
-                    f.write(f"{dep}\n")
-            else:
-                f.write("All dependencies are installed.\n")
+        # Output CSV file with methylation predictions for each sample
+        methylation_pred_dir=OUTPUT_DIR+"combined_methylation_outputs.bed"
+    shell:
+        # Execute the Python script to make methylation predictions using the model
+        "python {input.prediction_py} {input.model_dir} {input.finalfile_dir} {output.methylation_pred_dir} {params.ratio}"
 
 
+
+rule combine_methylation_outputs_with_combined_final_file:
+    input:
+        expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
+        OUTPUT_DIR+"combined_methylation_outputs.bed"
+    output:
+        combined_final_file=OUTPUT_DIR+"summary_with_combined_final_file.bed"
+    params:
+        python_code=config['constants']['PYTHON_DIR']+"generate_summary.py"
+    shell:
+        """
+        python {params.python_code} {output.combined_final_file}  {input} 
+        """
+
+
+
+# Define the rule 'combine_methylation_outputs' for combining methylation outputs for all samples, to create a pooled dataset.
+
+rule combine_methylation_outputs:
+    input:
+        expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples)
+    output:
+        combined_final_file=OUTPUT_DIR+"summary.bed"
+    params:
+        python_code=config['constants']['PYTHON_DIR']+"generate_summary.py"
+    shell:
+        """
+        python {params.python_code} {output.combined_final_file}  {input} 
+        """
+    
 
 rule download_bam_or_cram:
     params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)]
@@ -140,7 +165,7 @@ rule generate_output_cpg:
 rule bed_process:
     input:
         # Input Python script for processing
-        python_code=config['PYTHON_DIR']+"FeatureExtraction.py",
+        python_code=config['constants']['PYTHON_DIR']+"FeatureExtraction.py",
         # Input fasta data directory for each sample
         dinucletide_data_dir=OUTPUT_DIR+"{sample}/output.fasta",
         # Additional input files required for processing
@@ -148,7 +173,7 @@ rule bed_process:
         overlap_cpg_dinucleotide_dir=OUTPUT_DIR+"{sample}/output_reads.bed"
     output:
         # Output CSV file for each sample after processing
-        OUTPUT_DIR+"{sample}/final_file.csv"
+        OUTPUT_DIR+"{sample}/final_file.bed"
     params:
         # Parameter specifying output directory for each sample
         output_dir_name=OUTPUT_DIR+"{sample}/"
@@ -161,5 +186,5 @@ rule download_fasta_file:
     output: fasta = config['FASTA_FILE_DIR'], index = config['FASTA_FILE_DIR']+".fai"
     params: link = config['FASTA_FILE_LINK']
     shell:
-        """ wget {params.link}
+        """ wget -O {output.fasta} {params.link} 
         samtools faidx {output.fasta}"""
