@@ -51,6 +51,7 @@ class MachineLearning:
         y=np.array(y).reshape(len(y)  ,)
         y_1=np.where(y<0.5)[0]
         y_2=np.where(y>=0.5)[0]
+        ratio = len(y_2)/len(y)
         index=np.random.choice(y_1,len(y_2), replace=False)
         index=np.concatenate((index, y_2), axis=0)
         x_32=x[[ 'AA_x', 'AT_x', 'AG_x', 'AC_x',
@@ -62,7 +63,7 @@ class MachineLearning:
         x, y = shuffle(x_32_norm[index], y[index], random_state=0)
         y[y<0.5]=0
         y[y>=0.5]=1
-        return x,y
+        return x,y,ratio
         
     def random_forest_model(self,x,y):
         
@@ -82,17 +83,22 @@ class MachineLearning:
         x_norm =StandardScaler().fit_transform(x_32_norm)
    
         return x_norm
-    def predict_save(self,model_dir,finalfile_dir,methylation_pred_dir):
-        model = load(model_dir) 
-        data=pd.read_csv(finalfile_dir,low_memory=False)
+    def predict_save(self,model_dir,finalfile_dir,methylation_pred_dir,ratio='None'):
+        if ratio == 'None':
+            (model,ratio) = load(model_dir) 
+        else:
+            (model,_) = load(model_dir)
+
+        data=pd.read_csv(finalfile_dir,low_memory=False,sep="\t")
         x=self.data_extraction_for_ML_predict(data)
         data['methylation_level']=model.predict_proba(x)[:,1]
-        data[['chr','start','end','methylation_level']].to_csv(methylation_pred_dir,index=False)
+        data['methylation_level_threshold_adjusted']=data['methylation_level'].apply(lambda x: 1 if x>=(1-ratio) else 0)
+        data[['chr','start','end','methylation_level','methylation_level_threshold_adjusted']].to_csv(methylation_pred_dir,index=False,sep="\t")
     
     def train_save(self,model_dir,finalfile_dir,methylation_annotation):
 
-        features = pd.read_csv(finalfile_dir,low_memory=False)
-        annotation = pd.read_csv(methylation_annotation,low_memory=False)
+        features = pd.read_csv(finalfile_dir,low_memory=False,sep="\t")
+        annotation = pd.read_csv(methylation_annotation,low_memory=False,sep="\t")
 
         annotation['chr'] = annotation['chr'].astype('str')
         annotation['start'] = annotation['start'].astype('int64')
@@ -104,7 +110,7 @@ class MachineLearning:
 
         final_file = pd.merge(features,annotation,on=['chr','start','end'],how='inner')
 
-
-        x,y=self.data_extraction_for_ML(final_file)
+        x,y,ratio=self.data_extraction_for_ML(final_file)
         clf_rf=self.random_forest_model(x,y)
-        dump(clf_rf, model_dir)
+
+        dump((clf_rf,ratio), model_dir)
