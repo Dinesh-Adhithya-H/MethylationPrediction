@@ -24,15 +24,26 @@ if mode == "train":
         input:
             # Expand function generates output file paths for each sample in 'samples'
             config['FASTA_FILE_DIR'],
-            OUTPUT_DIR+'output_cpg.fasta',
             expand(FILES_DIR+"{sample}.bam", sample=samples),
+            expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
+            config['MODEL_DIR']
+        params:
+            unnecessary_files = [
+            OUTPUT_DIR+'output_cpg.fasta',
+            expand(OUTPUT_DIR+"{sample}/filtered_output.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
             expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
-            expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
-            config['MODEL_DIR']
+            expand(OUTPUT_DIR+"{sample}/chromosome_ranges.bed",sample=samples)
+            ]
+        run:
+            shell(f"echo 'Files to delete: {params.unnecessary_files}'")
+            shell(f"rm -f {params.unnecessary_files[0]}")
+            for files in params.unnecessary_files[1:]:
+                for sample_files in files:
+                    shell(f"rm -f {sample_files}")
 
 
 elif mode == "predict":
@@ -49,37 +60,63 @@ elif mode == "predict":
             input:
                 # Expand function generates output file paths for each sample in 'samples'
                 config['FASTA_FILE_DIR'],
-                OUTPUT_DIR+'output_cpg.fasta',
                 expand(FILES_DIR+"{sample}.bam", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
+                OUTPUT_DIR+"combined_final_file.bed",
+                OUTPUT_DIR+"combined_methylation_outputs.bed",
+                OUTPUT_DIR+"summary_with_combined_final_file.bed"
+
+            params:
+                unnecessary_files = [
+                OUTPUT_DIR+'output_cpg.fasta',
+                expand(OUTPUT_DIR+"{sample}/filtered_output.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/chromosome_ranges.bed",sample=samples)
+                ]
+            run:
+                shell(f"echo 'Files to delete: {params.unnecessary_files}'")
+                shell(f"rm -f {params.unnecessary_files[0]}")
+                for files in params.unnecessary_files[1:]:
+                    for sample_files in files:
+                        shell(f"rm -f {sample_files}")
 
-                OUTPUT_DIR+"combined_final_file.bed",
-                OUTPUT_DIR+"combined_methylation_outputs.bed",
-
-                OUTPUT_DIR+"summary_with_combined_final_file.bed"
 
     elif config['SAMPLE_TYPES']=="DIFFERENT":
         rule all:
             input:
                 config['FASTA_FILE_DIR'],
-                OUTPUT_DIR+'output_cpg.fasta',
                 expand(FILES_DIR+"{sample}.bam", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
-                expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples),
                 expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples),
 
                 OUTPUT_DIR+"summary.bed"
 
+            params:
+                unnecessary_files = [
+                OUTPUT_DIR+'output_cpg.fasta',
+                expand(OUTPUT_DIR+"{sample}/filtered_output.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output_reads2.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output.fasta", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/output3.bed", sample=samples),
+                expand(OUTPUT_DIR+"{sample}/chromosome_ranges.bed",sample=samples)
+                ]
+
+
+            run:
+                shell(f"echo 'Files to delete: {params.unnecessary_files}'")
+                shell(f"rm -f {params.unnecessary_files[0]}")
+                for files in params.unnecessary_files[1:]:
+                    for sample_files in files:
+                        shell(f"rm -f {sample_files}")
+
     else:
         raise ValueError(f"Invalid sample type selected. Please choose one of: SAME, DIFFERENT")
 
+        
