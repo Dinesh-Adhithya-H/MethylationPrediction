@@ -104,8 +104,13 @@ rule download_bam_or_cram:
     run:
         if params.link.endswith(".cram"):
             cram_file= FILES_DIR+wildcards.sample+".cram"
-            shell("wget {params} -O {cram_file}")
-            shell("samtools view -bS -@ 10 -T {config[FASTA_FILE_DIR]} -o  {output} {cram_file}")
+            if os.path.exists(params.link):
+                shell("samtools view -@ 10 -b  -o  {output} {cram_file}")
+                shell("rm -f {cram_file}")
+            else:
+                shell("wget {params} -O {cram_file}")
+                shell("samtools view -@ 10 -b  -o  {output} {cram_file}")
+                shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
             shell("wget {params} -O {output}")
         else:
@@ -120,37 +125,34 @@ rule bam_process:
         # Additional input files required for processing
         CpG_isl_bed_file=config['CpG_ISL_BED_FILE_DIR'],
         fasta_file=config['FASTA_FILE_DIR'],
-        remove_reads=config['constants']['REMOVE_READS_DIR']
+        remove_reads=OUTPUT_DIR+'{sample}/chromosome_ranges.bed' #config['REMOVE_READS_DIR']
+
     output: 
         # Output files for each sample after processing
         output_reads=OUTPUT_DIR+"{sample}/output_reads.bed",
         output_reads2=OUTPUT_DIR+"{sample}/output_reads2.bed",
         output_bed=OUTPUT_DIR+"{sample}/output.bed",
-        filtered_output_bed=OUTPUT_DIR+"{sample}/filtered_output.bed",
         output_fasta=OUTPUT_DIR+"{sample}/output.fasta",
+        filtered_output_bed=OUTPUT_DIR+"{sample}/filtered_output.bed",
         output3=OUTPUT_DIR+"{sample}/output3.bed"
     shell:
         """
         # Step 1: Extract reads from BAM file and save as output.bed
         samtools view -f 2 -F 3868 {input.bam_file_dir} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
         
-	      # Step 2: Unify the way of chromosome labeling
-        sed -i 's/^chr//g' {output.output_bed}
-        sed -i 's/^/chr/g' {output.output_bed}
+        # Step 2: Add chr to the read's chromosome
+        awk -F'\t' -v OFS='\t' '$1 !~ /^chr/ {{ $1 = "chr" $1 }} 1' {output.output_bed} > {output.filtered_output_bed}
 
-        # Step 3: Extract reads which belong from chr1 to chr22 and chrX
-        awk '($1 ~ /^chr([1-9]|1[0-9]|2[0-3])$/)' {output.output_bed} > {output.filtered_output_bed}
-
-        # Step 4: Remove reads in remove_reads.bed from output.bed and save as output3.bed
+        # Step 3: Remove reads in remove_reads.bed from output.bed and save as output3.bed
         grep -vFf {input.remove_reads} {output.filtered_output_bed} > {output.output3}
 
-        # Step 5: Perform bedtools intersect with CpG island bed file and save as output_reads.bed
+        # Step 4: Perform bedtools intersect with CpG island bed file and save as output_reads.bed
         bedtools intersect -b {input.CpG_isl_bed_file} -a {output.output3} -wa -wb > {output.output_reads}
 
-        # Step 6: Perform bedtools intersect with CpG island bed file and save as output_reads2.bed
+        # Step 5: Perform bedtools intersect with CpG island bed file and save as output_reads2.bed
         bedtools intersect -b {input.CpG_isl_bed_file} -a {output.output3} -wa > {output.output_reads2}
 
-        # Step 7: Extract fasta sequences using bedtools getfasta and save as output.fasta
+        # Step 6: Extract fasta sequences using bedtools getfasta and save as output.fasta
         bedtools getfasta -fi {input.fasta_file} -bed {output.output_reads2} > {output.output_fasta}
         """
 
@@ -191,4 +193,19 @@ rule download_fasta_file:
     params: link = config['FASTA_FILE_LINK']
     shell:
         """ wget -O {output.fasta} {params.link} 
-            samtools faidx {output.fasta}"""
+        samtools faidx {output.fasta}"""
+
+rule extract_chromosomes:
+    input:
+        bam_file=FILES_DIR+"{sample}.bam"  # Replace with your BAM file
+    output:
+        OUTPUT_DIR+"{sample}/chromosome_ranges.bed"
+    shell:
+         """
+        samtools view -H {input.bam_file} | grep "^@SQ" | cut -f 2 -d ':' | cut -f 2 -d '@' | cut -f 1 | while read -r chromosome; do
+            if [[ "$chromosome" != chr* ]]; then
+                chromosome="chr$chromosome"
+            fi
+            echo -e "$chromosome\\t-1\\t1" >> {output}
+        done
+        """
