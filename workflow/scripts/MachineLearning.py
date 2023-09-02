@@ -89,6 +89,7 @@ class MachineLearning:
             (model,ratio) = load(model_dir) 
         else:
             (model,_) = load(model_dir)
+            ratio = int(ratio)
 
         data=pd.read_csv(finalfile_dir,low_memory=False,sep="\t")
         x=self.data_extraction_for_ML_predict(data)
