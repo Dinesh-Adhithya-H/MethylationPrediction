@@ -3,9 +3,6 @@ from __init__ import *
 file_names = sys.argv[2:]
 combined_methylation_outputs=sys.argv[1]
 
-print(file_names)
-print("------")
-
 summary_file =  pd.DataFrame(columns=['chr','start','end'])
 for bed_file in file_names:
     data = pd.read_csv(bed_file, sep="\t",low_memory=False)
