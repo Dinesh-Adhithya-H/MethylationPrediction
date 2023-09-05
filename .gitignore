@@ -6,3 +6,6 @@ resources/*.cram
 results/*/*.bed
 results/*/*.csv
 venv
+results
+resources/*.fa
+resources/*.fa.fai
