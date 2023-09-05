@@ -113,7 +113,8 @@ rule download_bam_or_cram:
                 shell("samtools view -b -T {input.fasta_file} -o  {output} {cram_file}")
                 shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
-            shell("wget {params} -O {output}")
+            if os.path.exists(params.link)==False:
+                shell("wget {params} -O {output}")
         else:
             raise Exception("File format not supported, please give only bam or cram files")
 
