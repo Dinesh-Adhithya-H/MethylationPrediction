@@ -52,6 +52,7 @@ class MachineLearning:
         y_1=np.where(y<0.5)[0]
         y_2=np.where(y>=0.5)[0]
         ratio = len(y_2)/len(y)
+        
         if len(y_2)>len(y_1):
             index=np.random.choice(y_1,len(y_2), replace=False)
             index=np.concatenate((index, y_2), axis=0)
