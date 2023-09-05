@@ -156,8 +156,8 @@ class FeatureExtraction:
 dinucletide_data_dir = sys.argv[1] # dinucletide_data_dir
 cpg_island_data_dir = sys.argv[2] # cpg_island_data_dir
 overlap_cpg_dinucleotide_dir = sys.argv[3] # overlap_cpg_dinucleotide_dir
-output_dir_name=sys.argv[4]
+output_dir_name=sys.argv[4] # output directory name
 
 Feature_Extraction=FeatureExtraction(dinucletide_data_dir,cpg_island_data_dir,overlap_cpg_dinucleotide_dir)
 final_file=Feature_Extraction.process_files()
-final_file.to_csv(output_dir_name+"final_file.csv")
+final_file.to_csv(output_dir_name+"final_file.bed",sep="\t")
