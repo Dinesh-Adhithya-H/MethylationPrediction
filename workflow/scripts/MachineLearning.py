@@ -52,8 +52,13 @@ class MachineLearning:
         y_1=np.where(y<0.5)[0]
         y_2=np.where(y>=0.5)[0]
         ratio = len(y_2)/len(y)
-        index=np.random.choice(y_1,len(y_2), replace=False)
-        index=np.concatenate((index, y_2), axis=0)
+        if len(y_2)<len(y_1):
+            index=np.random.choice(y_1,len(y_2), replace=False)
+            index=np.concatenate((index, y_2), axis=0)
+        else:
+            index=np.random.choice(y_2,len(y_1), replace=False)
+            index=np.concatenate((index, y_1), axis=0)
+
         x_32=x[[ 'AA_x', 'AT_x', 'AG_x', 'AC_x',
            'TA_x', 'TT_x', 'TG_x', 'TC_x', 'GA_x', 'GT_x', 'GG_x', 'GC_x', 'CA_x',
            'CT_x', 'CG_x', 'CC_x', 'AA_y', 'AT_y', 'AG_y', 'AC_y', 'TA_y', 'TT_y',
@@ -100,7 +105,7 @@ class MachineLearning:
     
     def train_save(self,model_dir,finalfile_dir,methylation_annotation):
 
-        features = pd.read_csv(finalfile_dir,low_memory=False)
+        features = pd.read_csv(finalfile_dir,low_memory=False, sep='\t')
         annotation = pd.read_csv(methylation_annotation,low_memory=False, sep='\t')
 
         annotation['chr'] = annotation['chr'].astype('str')
