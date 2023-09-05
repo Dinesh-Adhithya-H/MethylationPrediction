@@ -39,7 +39,6 @@ if mode == "train":
             expand(OUTPUT_DIR+"{sample}/chromosome_ranges.bed",sample=samples)
             ]
         run:
-            shell(f"echo 'Files to delete: {params.unnecessary_files}'")
             shell(f"rm -f {params.unnecessary_files[0]}")
             for files in params.unnecessary_files[1:]:
                 for sample_files in files:
@@ -79,7 +78,6 @@ elif mode == "predict":
                 expand(OUTPUT_DIR+"{sample}/chromosome_ranges.bed",sample=samples)
                 ]
             run:
-                shell(f"echo 'Files to delete: {params.unnecessary_files}'")
                 shell(f"rm -f {params.unnecessary_files[0]}")
                 for files in params.unnecessary_files[1:]:
                     for sample_files in files:
@@ -110,7 +108,6 @@ elif mode == "predict":
 
 
             run:
-                shell(f"echo 'Files to delete: {params.unnecessary_files}'")
                 shell(f"rm -f {params.unnecessary_files[0]}")
                 for files in params.unnecessary_files[1:]:
                     for sample_files in files:
