@@ -59,7 +59,8 @@ rule download_bam_or_cram:
                 shell("samtools view -b -T {input.fasta_file} -o  {output} {cram_file}")
                 shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
-            shell("wget {params} -O {output}")
+            if os.path.exists(params.link):
+                shell("wget {params} -O {output}")
         else:
             raise Exception("File format not supported, please give only bam or cram files")
 
@@ -150,7 +151,12 @@ rule bed_process:
 
 rule download_fasta_file:
     output: fasta = config['FASTA_FILE_DIR'], index = config['FASTA_FILE_DIR']+".fai"
-    params: link = config['FASTA_FILE_LINK']
-    shell:
-        """ wget -O {output.fasta} {params.link}
-        samtools faidx {output.fasta}"""
+    params: link = config['FASTA_FILE_LINK'], index_link = config['FASTA_FILE_INDEX_LINK']
+    run:
+        if os.path.exists(output.fasta)==False:
+            shell("wget -O {output.fasta} {params.link}")
+        if os.path.exists(output.index)==False:
+            if params.index_link!="None":
+                shell("wget -O {output.index} {params.index_link}")
+            else:
+                shell("samtools faidx {output.fasta}")

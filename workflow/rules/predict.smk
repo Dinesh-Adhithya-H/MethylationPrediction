@@ -192,10 +192,15 @@ rule bed_process:
 
 rule download_fasta_file:
     output: fasta = config['FASTA_FILE_DIR'], index = config['FASTA_FILE_DIR']+".fai"
-    params: link = config['FASTA_FILE_LINK']
-    shell:
-        """ wget -O {output.fasta} {params.link} 
-        samtools faidx {output.fasta}"""
+    params: link = config['FASTA_FILE_LINK'], index_link = config['FASTA_FILE_INDEX_LINK']
+    run:
+        if os.path.exists(output.fasta)==False:
+            shell("wget -O {output.fasta} {params.link}")
+        if os.path.exists(output.index)==False:
+            if params.index_link!="None":
+                shell("wget -O {output.index} {params.index_link}")
+            else:
+                shell("samtools faidx {output.fasta}")
 
 rule extract_chromosomes:
     input:
