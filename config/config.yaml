@@ -2,7 +2,7 @@ constants:
   PYTHON_DIR: "workflow/scripts/" # The directory of the python files which are used in the snakefile.
 
 FILES_DIR: "bam_files/" # The directory where the bam files live.
-MODEL_DIR: "workflow/models/model.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode.
+MODEL_DIR: "workflow/models/model_test_run.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode.
 OUTPUT_DIR: "results/" # The directory where the output files are stored at.
 
 FASTA_FILE_DIR: "resources/GRCh38_full_analysis_set_plus_decoy_hla.fa" #Fasta file
