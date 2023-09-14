@@ -2,7 +2,7 @@ constants:
   PYTHON_DIR: "workflow/scripts/" # The directory of the python files which are used in the snakefile.
 
 FILES_DIR: "bam_files/" # The directory where the bam files live.
-MODEL_DIR: "workflow/models/model_test_run.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode.
+MODEL_DIR: "workflow/models/model_default.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode.
 OUTPUT_DIR: "results/" # The directory where the output files are stored at.
 
 FASTA_FILE_DIR: "resources/GRCh38_full_analysis_set_plus_decoy_hla.fa" #Fasta file
@@ -13,6 +13,6 @@ FASTA_FILE_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/
 METHYLATION_ANNOTATION_DIR: "resources/hg38_methylation_level.bed" # The csv file which contains the methylation state of the CpG islands
 FASTA_FILE_INDEX_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
 
-MODE: "train" # train or predict mode. If train, the model will be trained and saved. If predict, the model will be loaded and used to predict the methylation state of the CpG islands.
+MODE: "predict" # train or predict mode. If train, the model will be trained and saved. If predict, the model will be loaded and used to predict the methylation state of the CpG islands.
 RATIO: "None" # ratio of number of methylated CpG islands to number of unmethylated CpG islands. If None, the ratio will be calculated from training dataset.
 SAMPLE_TYPES: "SAME" # Whether the samples belong to the same tissue or not. If SAME, the samples belong to the same tissue. If DIFFERENT, the samples belong to different tissues.
