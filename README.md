@@ -62,4 +62,4 @@ SAMPLE_TYPES: "SAME/DIFFERENT"
 
 ## Comments
 
-1. Once the git repo has been cloned, the first run shall be a test run on the HG01879_hg38_chr1_1-11M.bam, where using a model trained on high coverage bam files of blood tissue type from the [1000 genomes project](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project).
+1. Once the git repo has been cloned, the first run shall be a test run on the HG01879_hg38_chr1_1-11M.bam, where  a model trained on high coverage bam files of blood tissue type from the [1000 genomes project](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project) can be used to predict the methylation state of CpG islands from the bam file for testing.
