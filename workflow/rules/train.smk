@@ -61,6 +61,8 @@ rule download_bam_or_cram:
         elif params.link.endswith(".bam"):
             if os.path.exists(params.link):
                 shell("wget {params} -O {output}")
+            else:
+                pass
         else:
             raise Exception("File format not supported, please give only bam or cram files")
 
