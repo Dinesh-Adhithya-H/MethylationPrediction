@@ -44,22 +44,23 @@ rule combine_final_file:
         df_combined.to_csv(output.combined_final_file,index=True,sep="\t")
 
 # Define the rule 'download_bam_or_cram' for downloading BAM or CRAM files
+
 rule download_bam_or_cram:
-    input: fasta_file=config['FASTA_FILE_DIR']
-    params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)]
+    params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)],
+            fasta_file=config['FASTA_FILE_DIR']
     output: FILES_DIR+"{sample}.bam"
     run:
         if params.link.endswith(".cram"):
             cram_file= FILES_DIR+wildcards.sample+".cram"
             if os.path.exists(params.link):
-                shell("samtools view -b -T {input.fasta_file} -o  {output} {cram_file}")
+                shell("samtools view -b -T {params.fasta_file} -o  {output} {cram_file}")
                 shell("rm -f {cram_file}")
             else:
                 shell("wget {params} -O {cram_file}")
-                shell("samtools view -b -T {input.fasta_file} -o  {output} {cram_file}")
+                shell("samtools view -b -T {params.fasta_file} -o  {output} {cram_file}")
                 shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
-            if os.path.exists(params.link):
+            if os.path.exists(params.link)==False:
                 shell("wget {params} -O {output}")
             else:
                 pass
