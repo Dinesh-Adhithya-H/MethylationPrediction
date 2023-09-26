@@ -114,7 +114,7 @@ rule download_bam_or_cram:
                 shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
             if os.path.exists(params.link)==False:
-                shell("wget {params} -O {output}")
+                shell("wget {params.link} -O {output}")
             else:
                 pass
         else:
