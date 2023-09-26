@@ -5,7 +5,7 @@ combined_methylation_outputs=sys.argv[1]
 
 summary_file =  pd.DataFrame(columns=['chr','start','end'])
 for bed_file in file_names:
-    print(bed_file)
+    #print(bed_file)
 
     data = pd.read_csv(bed_file, sep="\t",low_memory=False)
     data.rename({"methylation_level_threshold_adjusted":bed_file.split("/")[-2].split(".")[0]+"_methylation_level_threshold_adjusted"   },axis=1,inplace=True)
