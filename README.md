@@ -1,4 +1,4 @@
-# MethylationPrediction
+# WGS2meth
 
 ## Getting Started
 
