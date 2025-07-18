@@ -10,7 +10,7 @@ CpG_ISL_BED_FILE_DIR: "resources/CpG_isl_hg38.bed" # Bed file of the CpG islands
 
 TXT_FILE_DIR: "config/file_links_local.txt" # The file which contains the links to the bam files
 FASTA_FILE_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa" # Link to the fasta file
-METHYLATION_ANNOTATION_DIR: "resources/hg38_methylation_level.bed" # The csv file which contains the methylation state of the CpG islands
+METHYLATION_ANNOTATION_DIR: "resources/hg38_methylation_level_LCL.bed" # The csv file which contains the methylation state of the CpG islands
 FASTA_FILE_INDEX_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
 
 MODE: "predict" # train or predict mode. If train, the model will be trained and saved. If predict, the model will be loaded and used to predict the methylation state of the CpG islands.
