@@ -125,7 +125,7 @@ rule download_bam_or_cram:
 rule bam_process:
     input:
         # Input BAM file for each sample
-        bam_file_dir=FILES_DIR+"{sample}.bam",
+        bam_file=FILES_DIR+"{sample}.bam",
         # Additional input files required for processing
         CpG_isl_bed_file=config['CpG_ISL_BED_FILE_DIR'],
         fasta_file=config['FASTA_FILE_DIR'],
@@ -142,7 +142,8 @@ rule bam_process:
     shell:
         """
         # Step 1: Extract reads from BAM file and save as output.bed
-        samtools view -f 2 -F 3868 {input.bam_file_dir} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
+        ####### samtools view -f 2 -F 3868 {input.bam_file} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
+        samtools view -F 3868 {input.bam_file} | awk 'BEGIN{OFS="\t"} /^@/ {print; next} $6 !~ /^[0-9]+[SH]/ {print}' | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
         
         # Step 2: Add chr to the read's chromosome
         awk -F'\t' -v OFS='\t' '$1 !~ /^chr/ {{ $1 = "chr" $1 }} 1' {output.output_bed} > {output.filtered_output_bed}
