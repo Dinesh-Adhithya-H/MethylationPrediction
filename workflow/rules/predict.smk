@@ -1,42 +1,35 @@
 configfile: "config/config.yaml"
 
-# Import necessary modules
 import os
 import subprocess
 
 OUTPUT_DIR=config['OUTPUT_DIR']
 FILES_DIR=config['FILES_DIR']
 
-sample_download_links = [i.rstrip('\n').replace('ftp:/','http://') for i in  open(config['TXT_FILE_DIR']).readlines()]
-samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in  open(config['TXT_FILE_DIR']).readlines()]
+sample_download_links = [i.rstrip('\n').replace('ftp:/','http://') for i in  open(config['TXT_FILE_LIST']).readlines()]
+samples = [i.split("/")[-1].rstrip('\n').rstrip(".cram").rstrip(".bam") for i in  open(config['TXT_FILE_LIST']).readlines()]
 
 
 # Define the rule 'get_prediction' for making methylation state predictions
 rule get_prediction:
     input:
-        # Input Python script for prediction
-        prediction_py=config['constants']['PYTHON_DIR']+"MachineLearning_Prediction.py",
-        # Input trained model file
-        model_dir=config['MODEL_DIR'],
-        # Input final CSV file for each sample
-        finalfile_dir=OUTPUT_DIR+"{sample}/final_file.bed"
+        prediction_py="workflow/scripts/MachineLearning_Prediction.py",
+        model=config['MODEL'],
+        finalfile=OUTPUT_DIR + "{sample}/final_file.bed"
     params:
-        # Ratio of methylated islands to total islands
         ratio = config['RATIO']
     output:
-        # Output CSV file with methylation predictions for each sample
-        methylation_pred_dir=OUTPUT_DIR+"{sample}/methylation_outputs.bed"
+        methylation_pred=OUTPUT_DIR + "{sample}/methylation_outputs.bed"
     shell:
-        # Execute the Python script to make methylation predictions using the model
-        "python {input.prediction_py} {input.model_dir} {input.finalfile_dir} {output.methylation_pred_dir} {params.ratio}"
+        "python {input.prediction_py} {input.model} {input.finalfile} {output.methylation_pred} {params.ratio}"
+
 
 # Define the rule 'combine_final_file' for combining combine_final_file outputs for all samples, to create a pooled dataset.
-
 rule combine_final_file:
     input:
-        expand(OUTPUT_DIR+"{sample}/final_file.bed", sample=samples)
+        expand(OUTPUT_DIR + "{sample}/final_file.bed", sample=samples)
     output:
-        combined_final_file=OUTPUT_DIR+"combined_final_file.bed"
+        combined_final_file=OUTPUT_DIR + "combined_final_file.bed"
     run:
         import pandas as pd
         df_combined = pd.DataFrame()
@@ -50,22 +43,15 @@ rule combine_final_file:
 
 rule get_prediction_combine_final_file:
     input:
-        # Input Python script for prediction
-        prediction_py=config['constants']['PYTHON_DIR']+"MachineLearning_Prediction.py",
-        # Input trained model file
-        model_dir=config['MODEL_DIR'],
-        # Input final CSV file for each sample
-        finalfile_dir=OUTPUT_DIR+"combined_final_file.bed"
+        prediction_py = "workflow/scripts/MachineLearning_Prediction.py",
+        model = config['MODEL'],
+        finalfile = OUTPUT_DIR + "combined_final_file.bed"
     params:
-        # Ratio of methylated islands to total islands
         ratio = config['RATIO']
     output:
-        # Output CSV file with methylation predictions for each sample
-        methylation_pred_dir=OUTPUT_DIR+"combined_methylation_outputs.bed"
+        methylation_pred = OUTPUT_DIR + "combined_methylation_outputs.bed"
     shell:
-        # Execute the Python script to make methylation predictions using the model
-        "python {input.prediction_py} {input.model_dir} {input.finalfile_dir} {output.methylation_pred_dir} {params.ratio}"
-
+        "python {input.prediction_py} {input.model} {input.finalfile} {output.methylation_pred} {params.ratio}"
 
 
 rule combine_methylation_outputs_with_combined_final_file:
@@ -75,64 +61,60 @@ rule combine_methylation_outputs_with_combined_final_file:
     output:
         combined_final_file=OUTPUT_DIR+"summary_with_combined_final_file.bed"
     params:
-        python_code=config['constants']['PYTHON_DIR']+"generate_summary.py"
+        python_code="workflow/scripts/generate_summary.py"
     shell:
         """
-        python {params.python_code} {output.combined_final_file}  {input} 
+        python {params.python_code} {output.combined_final_file} {input} 
         """
-
 
 
 # Define the rule 'combine_methylation_outputs' for combining methylation outputs for all samples, to create a pooled dataset.
-
 rule combine_methylation_outputs:
     input:
         expand(OUTPUT_DIR+"{sample}/methylation_outputs.bed", sample=samples)
     output:
         combined_final_file=OUTPUT_DIR+"summary.bed"
     params:
-        python_code=config['constants']['PYTHON_DIR']+"generate_summary.py"
+        python_code="workflow/scripts/generate_summary.py"
     shell:
         """
-        python {params.python_code} {output.combined_final_file}  {input} 
+        python {params.python_code} {output.combined_final_file} {input} 
         """
     
 
 rule download_bam_or_cram:
     params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)],
-            fasta_file = config['FASTA_FILE_DIR']
-    output: FILES_DIR+"{sample}.bam"
+            fasta_file = config['FASTA_FILE']
+    output: 
+            bam_out = FILES_DIR + "{sample}.bam"
     run:
+        import os
         if params.link.endswith(".cram"):
-            cram_file= FILES_DIR+wildcards.sample+".cram"
+            cram_file= FILES_DIR + wildcards.sample + ".cram"
             if os.path.exists(params.link):
-                shell("samtools view -b -T {params.fasta_file} -o  {output} {cram_file}")
+                shell("samtools view -b -T {params.fasta_file} -o {output.bam_out} {cram_file}")
                 shell("rm -f {cram_file}")
             else:
                 shell("wget {params.link} -O {cram_file}")
-                shell("samtools view -b -T {params.fasta_file} -o  {output} {cram_file}")
+                shell("samtools view -b -T {params.fasta_file} -o {output.bam_out} {cram_file}")
                 shell("rm -f {cram_file}")
         elif params.link.endswith(".bam"):
             if os.path.exists(params.link)==False:
-                shell("wget {params.link} -O {output}")
-            else:
-                pass
+                shell("wget {params.link} -O {output.bam_out}")
+            elif params.link != str(output.bam_out):
+                shell("cp -u {params.link} {output.bam_out}")
         else:
             raise Exception("File format not supported, please give only bam or cram files")
 
 
-# Define the rule 'bam_process' for processing BAM files
 rule bam_process:
     input:
-        # Input BAM file for each sample
         bam_file=FILES_DIR+"{sample}.bam",
-        # Additional input files required for processing
-        CpG_isl_bed_file=config['CpG_ISL_BED_FILE_DIR'],
-        fasta_file=config['FASTA_FILE_DIR'],
-        remove_reads=OUTPUT_DIR+'{sample}/chromosome_ranges.bed' #config['REMOVE_READS_DIR']
+        CpG_isl_bed_file=config['CpG_ISL_BED_FILE'],
+        fasta_file=config['FASTA_FILE'],
+        remove_reads=OUTPUT_DIR+'{sample}/chromosome_ranges.bed'
 
     output: 
-        # Output files for each sample after processing
         output_reads=OUTPUT_DIR+"{sample}/output_reads.bed",
         output_reads2=OUTPUT_DIR+"{sample}/output_reads2.bed",
         output_bed=OUTPUT_DIR+"{sample}/output.bed",
@@ -143,7 +125,7 @@ rule bam_process:
         """
         # Step 1: Extract reads from BAM file and save as output.bed
         ####### samtools view -f 2 -F 3868 {input.bam_file} | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
-        samtools view -F 3868 {input.bam_file} | awk 'BEGIN{OFS="\t"} /^@/ {print; next} $6 !~ /^[0-9]+[SH]/ {print}' | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
+        samtools view -F 3868 {input.bam_file} | awk 'BEGIN{{OFS="\\t"}} /^@/ {{print; next}} $6 !~ /^[0-9]+[SH]/ {{print}}' | awk '{{print $3 "\t"  $4-2 "\t" $4}}' > {output.output_bed}
         
         # Step 2: Add chr to the read's chromosome
         awk -F'\t' -v OFS='\t' '$1 !~ /^chr/ {{ $1 = "chr" $1 }} 1' {output.output_bed} > {output.filtered_output_bed}
@@ -164,38 +146,35 @@ rule bam_process:
 
 rule generate_output_cpg:
     input:
-        CpG_isl_bed_file=config['CpG_ISL_BED_FILE_DIR'],
-        fasta_file=config['FASTA_FILE_DIR'],
+        CpG_isl_bed_file=config['CpG_ISL_BED_FILE'],
+        fasta_file=config['FASTA_FILE'],
     output:
         output_cpg=OUTPUT_DIR+'output_cpg.fasta'
     shell:
         'bedtools getfasta -fi {input.fasta_file}  -bed {input.CpG_isl_bed_file} > {output.output_cpg}'
         
 
-# Define the rule 'bed_process' for further processing of fasta sequences
 rule bed_process:
     input:
-        # Input Python script for processing
-        python_code=config['constants']['PYTHON_DIR']+"FeatureExtraction.py",
-        # Input fasta data directory for each sample
-        dinucletide_data_dir=OUTPUT_DIR+"{sample}/output.fasta",
-        # Additional input files required for processing
-        cpg_island_data_dir=OUTPUT_DIR+'output_cpg.fasta',
-        overlap_cpg_dinucleotide_dir=OUTPUT_DIR+"{sample}/output_reads.bed"
+        python_code="workflow/scripts/FeatureExtraction.py",
+        dinucletide_data=OUTPUT_DIR+"{sample}/output.fasta",
+        cpg_island_data=OUTPUT_DIR+'output_cpg.fasta',
+        overlap_cpg_dinucleotide=OUTPUT_DIR+"{sample}/output_reads.bed"
     output:
-        # Output CSV file for each sample after processing
         OUTPUT_DIR+"{sample}/final_file.bed"
     params:
-        # Parameter specifying output directory for each sample
         output_dir_name=OUTPUT_DIR+"{sample}/"
     shell:
-        # Execute the Python script to process fasta data and generate final CSV file
-        "python {input.python_code} {input.dinucletide_data_dir} {input.cpg_island_data_dir} {input.overlap_cpg_dinucleotide_dir} {params.output_dir_name}"
+        "python {input.python_code} {input.dinucletide_data} {input.cpg_island_data} {input.overlap_cpg_dinucleotide} {params.output_dir_name}"
 
 
 rule download_fasta_file:
-    output: fasta = config['FASTA_FILE_DIR'], index = config['FASTA_FILE_DIR']+".fai"
-    params: link = config['FASTA_FILE_LINK'], index_link = config['FASTA_FILE_INDEX_LINK']
+    output: 
+           fasta = config['FASTA_FILE'],
+           index = config['FASTA_FILE']+".fai"
+    params:
+           link = config['FASTA_FILE_LINK'],
+           index_link = config['FASTA_FILE_INDEX_LINK']
     run:
         if os.path.exists(output.fasta)==False:
             shell("wget -O {output.fasta} {params.link}")
@@ -204,6 +183,7 @@ rule download_fasta_file:
                 shell("wget -O {output.index} {params.index_link}")
             else:
                 shell("samtools faidx {output.fasta}")
+
 
 rule extract_chromosomes:
     input:
