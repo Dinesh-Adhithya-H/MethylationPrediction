@@ -1,5 +1,5 @@
 
-FILES_DIR: "bam_files/" # The directory where input bam files live or are downloaded if urls are given as input.
+FILES_DIR: "bam_files/" # The directory where input BAM files live or are downloaded if urls are given as input.
 MODEL: "workflow/models/model_default.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode. Better always keep "model_degault" model intact and overwrite only "model.joblib" file during training.
 OUTPUT_DIR: "results/" # The directory where the output predictions are saved.
 
