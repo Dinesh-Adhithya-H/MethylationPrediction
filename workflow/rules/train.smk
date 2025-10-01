@@ -38,7 +38,6 @@ rule combine_final_file:
         df_combined.to_csv(output.combined_final_file,index=True,sep="\t")
 
 
-# Define the rule 'download_bam_or_cram' for downloading BAM or CRAM files
 rule download_bam_or_cram:
     params: link = lambda wildcards: sample_download_links[samples.index(wildcards.sample)],
             fasta_file = config['FASTA_FILE']
@@ -64,7 +63,6 @@ rule download_bam_or_cram:
             raise Exception("File format not supported, please give only bam or cram files")
 
 
-# Define the rule 'bam_process' for processing BAM files
 rule bam_process:
     input:
         bam_file = FILES_DIR + "{sample}.bam",
@@ -126,7 +124,6 @@ rule generate_fasta_cpg:
         'bedtools getfasta -fi {input.fasta_file}  -bed {input.CpG_isl_bed_file} > {output.output_cpg}'
         
 
-# Define the rule 'bed_process' for further processing of fasta sequences
 rule bed_process:
     input:
         python_code = "workflow/scripts/FeatureExtraction.py",
