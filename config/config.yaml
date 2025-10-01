@@ -1,16 +1,15 @@
-
-FILES_DIR: "bam_files/" # The directory where input BAM files live or are downloaded if urls are given as input.
-MODEL: "workflow/models/model_default.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode. Better always keep "model_degault" model intact and overwrite only "model.joblib" file during training.
+FILES_DIR: "bam_files/" # The directory where input bam files live or are downloaded if urls are given as input.
+MODEL: "workflow/models/model.joblib" # The name of the machine learning model to predict methylation state of CpG Islands or where to save the model in training mode. Better always keep "model_degault" model intact and overwrite only "model.joblib" file during training.
 OUTPUT_DIR: "results/" # The directory where the output predictions are saved.
 
 FASTA_FILE: "resources/GRCh38_full_analysis_set_plus_decoy_hla.fa" # Reference fasta file
-CpG_ISL_BED_FILE: "resources/CpG_isl_hg38.bed" # Bed file of the CpG island coordinates
+CpG_ISL_BED_FILE: "resources/CpG_isl_hg38.bed" # Bed file of CpG islands coordinates
 
 TXT_FILE_LIST: "config/file_links_local.txt" # The file which contains the path to the input bam files or urls of bam/cram files to download.
-FASTA_FILE_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa" # Link to the fasta file. Needed to download when reference fasta file is missing.
-FASTA_FILE_INDEX_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai"
-METHYLATION_ANNOTATION: "resources/hg38_methylation_level_LCL.bed" # The csv file which contains the methylation state of the CpG islands. It is needed only when training the model.
+FASTA_FILE_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa" # Link to the fasta file. Needed when reference fasta file is missing.
+FASTA_FILE_INDEX_LINK: "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai" # Link to the index file when reference is missing.
+METHYLATION_ANNOTATION: "resources/hg38_methylation_level_LCL.bed" # The csv file which contains the methylation state of the CpG islands. It is needed only when training the model
 
 MODE: "predict" # "train" or "predict" mode. If "train", the model will be trained and saved in the MODEL_DIR. If "predict", the model will be loaded and used to predict the methylation state of the CpG islands.
-RATIO: "None" # ratio of number of methylated CpG islands to number of unmethylated CpG islands. If "None", the ratio is calculated from the training dataset. Used only in prediction mode.
+RATIO: "None" # ratio of number of methylated CpG islands to total number of CpG islands. If "None", the ratio is calculated from the training dataset. Used only in prediction mode.
 SAMPLE_TYPES: "DIFFERENT" # Whether the samples belong to the same/different tissues ("SAME" or "DIFFERENT"). If "SAME" - all outputs are aggregated at the last step in one combined file. Methylation state predctions are also made on the aggregated sample.

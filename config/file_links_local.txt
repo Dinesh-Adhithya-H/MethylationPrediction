@@ -1,1 +1,1 @@
-bam_files/HG01879_hg38_chr1_1-11M.bam
+HG01879_hg38_chr1_1-11M.bam

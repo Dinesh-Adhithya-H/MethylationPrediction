@@ -42,11 +42,9 @@ class MachineLearning:
         for i in range(len(y_true)):
             cs+=y_pred_prob[i][dict[y_true[i]]]
 
-
         return cs/len(y_true)
         
     def data_extraction_for_ML(self,x):
-        
         y=np.array(x['methylation_level'].astype('float64'))
         y=np.array(y).reshape(len(y)  ,)
         y_1=np.where(y<0.5)[0]
@@ -70,14 +68,14 @@ class MachineLearning:
         y[y<0.5]=0
         y[y>=0.5]=1
         return x,y,ratio
-        
+
     def random_forest_model(self,x,y):
-        
         x=StandardScaler().fit_transform(x)
-        clf_rf = RandomForestClassifier(class_weight='balanced', max_depth=20 ,n_estimators=800, criterion='entropy')
+        clf_rf = RandomForestClassifier(class_weight='balanced', max_depth=4, n_estimators=2000, criterion='entropy')
         clf_rf.fit(x,y)
-        return clf_rf 
-    
+        return clf_rf
+
+
     def data_extraction_for_ML_predict(self,x):
         x_32=x[[ 'AA_x', 'AT_x', 'AG_x', 'AC_x',
            'TA_x', 'TT_x', 'TG_x', 'TC_x', 'GA_x', 'GT_x', 'GG_x', 'GC_x', 'CA_x',
@@ -92,15 +90,17 @@ class MachineLearning:
   
     def predict_save(self,model_dir,finalfile_dir,methylation_pred_dir,ratio='None'):
         if ratio == 'None':
-            (model,ratio) = load(model_dir) 
+            model, ratio = load(model_dir)
         else:
-            (model,_) = load(model_dir)
+            model = load(model_dir)[0]
             ratio = float(ratio)
 
         data=pd.read_csv(finalfile_dir,low_memory=False,sep="\t")
         x=self.data_extraction_for_ML_predict(data)
         data['methylation_level']=model.predict_proba(x)[:,1]
-        data['methylation_level_threshold_adjusted']=data['methylation_level'].apply(lambda x: 1 if x>=(1-ratio) else 0)
+        #data['methylation_level_threshold_adjusted']=data['methylation_level'].apply(lambda x: 1 if x>=(1-ratio) else 0)
+        q = np.quantile(data['methylation_level'], 1-ratio)
+        data['methylation_level_threshold_adjusted'] = data['methylation_level'].apply(lambda x: 1 if x >= q else 0)
         data[['chr','start','end','methylation_level','methylation_level_threshold_adjusted']].to_csv(methylation_pred_dir,index=False,sep="\t")
     
     
@@ -118,8 +118,7 @@ class MachineLearning:
         features['end'] = features['end'].astype('int64')
 
         final_file = pd.merge(features,annotation,on=['chr','start','end'],how='inner')
-
         x,y,ratio=self.data_extraction_for_ML(final_file)
         clf_rf=self.random_forest_model(x,y)
-        
-        dump((clf_rf,ratio), model_dir)
+        dump((clf_rf, ratio), model_dir)
+

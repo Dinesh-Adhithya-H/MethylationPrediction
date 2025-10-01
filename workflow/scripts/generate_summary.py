@@ -11,9 +11,9 @@ for bed_file in file_names:
     data.rename({"methylation_level_threshold_adjusted":bed_file.split("/")[-2].split(".")[0]+"_methylation_level_threshold_adjusted"   },axis=1,inplace=True)
     data.rename({"methylation_level":bed_file.split("/")[-2].split(".")[0]+"_methylation_level"  },axis=1,inplace=True)
     
-    data['chr']=data['chr'].astype(np.str_)
-    data['start']=data['start'].astype(np.int8)
-    data['end']=data['end'].astype(np.int8)
+    data['chr']=data['chr'].astype(str)
+    data['start']=data['start'].astype(int)
+    data['end']=data['end'].astype(int)
 
     summary_file = pd.merge(data,summary_file,on=['chr','start','end'], how="outer")
 

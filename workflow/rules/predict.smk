@@ -144,7 +144,7 @@ rule bam_process:
         """
 
 
-rule generate_output_cpg:
+rule generate_fasta_cpg:
     input:
         CpG_isl_bed_file=config['CpG_ISL_BED_FILE'],
         fasta_file=config['FASTA_FILE'],
