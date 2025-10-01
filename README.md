@@ -3,6 +3,7 @@
 ## Getting Started
 
 WGS2meth predicts the methylation state of CpG islands directly from standard DNA-seq alignemnt data. It exploits fragmentation biases from library preparation step: methylated CpG dinucleotides are more prone to hydrolisis, which leave characteristic patterns in read start coordinates within CpG islands. By analyzing these patterns, WGS2meth infers whether each CpG island is methylated or unmethylated.
+
 Input: aligned BAM/CRAM files.
 
 ## What does it do?
@@ -60,7 +61,7 @@ TXT_FILE_LIST: 'The file which contains paths to the input bam files or urls of 
 MODE: 'Could be either "predict" or "train". If "train", the model will be trained and saved in "MODEL". If "predict", the model will be loaded and used to predict the methylation state of input CpG islands.'
 METHYLATION_ANNOTATION: 'The csv file which contains the methylation state of the CpG islands. It is needed only in the "train" mode'
 RATIO: '"None" or some float value "r" which specifies an expected fraction of methylated CpG islands. It is only used in "predict" mode. If it is set to "None" - the ratio observed during the input model's training will be used.'
-MODEL: 'Model from "workflow/models/" folder has to be specified. Depending on the mode, a model is either created ("train") or used as an input ("predict").'
+MODEL: 'Model from "workflow/models/" folder has to be specified. Depending on the mode, a model is either created ("train") or used as an input ("predict"). Better always keep "model_degault" model intact and overwrite only "model.joblib" file during training.'
 SAMPLE_TYPES: 'Whether the samples belong to the same or different sources ("SAME" or "DIFFERENT"). If "SAME" - all outputs are aggregated at the last step in one combined file. Methylation state predctions are also made on the aggregated sample.'
 ```
 
