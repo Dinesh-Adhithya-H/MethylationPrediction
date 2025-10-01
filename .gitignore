@@ -1,6 +1,5 @@
 .snakemake
 .ipynb_checkpoints
-.fa
 resources/*.bam
 resources/*.cram
 results/*/*.bed
@@ -12,3 +11,4 @@ resources/*.fa.fai
 bam_files/*.bam
 bam_files/*.cram
 !bam_files/HG01879_hg38_chr1_1-11M.bam
+
