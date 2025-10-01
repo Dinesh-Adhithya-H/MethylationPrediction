@@ -2,18 +2,19 @@
 
 ## Getting Started
 
-Using the information of dinucleotide around which reads break during sequencing, this project aims to predict the methylation state of CpG Islands.
-
-![Workflow](./Figures/dag.svg)
+WGS2meth predicts the methylation state of CpG islands directly from standard DNA-seq alignemnt data. It exploits fragmentation biases from library preparation step: methylated CpG dinucleotides are more prone to hydrolisis, which leave characteristic patterns in read start coordinates within CpG islands. By analyzing these patterns, WGS2meth infers whether each CpG island is methylated or unmethylated.
+Input: aligned BAM/CRAM files.
 
 ## What does it do?
-1. The package takes a .txt file containing links to cram files as input from the 1000 Genomes project.
-2. The .cram files are downloaded.
-3. Converts the .cram file to a .bam file using a fasta file. The directory of the fasta file shall be edited in the config file.
-4. The read positions are extracted from the bam file using bedtools.
-5. The nucleotide starting positions are extracted, and then the ratio of the occurring frequency of the dinucleotide to the expected frequency of the dinucleotide.
-6. Then a finalfile.csv is generated, with contains the coordinates of the CpG islands and 16 feature values, each corresponding to a dinucleotide.
-7. Then a methylation_prediction.csv is generated, where the CpG Island methylation state is predicted using a pre-trained model.
+1. WGS2meth takes a .txt file, containing url links or local paths to BAM/CRAM files as an input.
+2. If needed, alignemnt files are downloaded and converted to BAM. If no local reference genome is provided, it can download one from a user-supplied url link.
+3. Reads are filtered and read positions are extracted from a BAM file.
+4. For each of 16 dinucleotides fragmentation rates are measured for each CpG island. Then CpG islands methylation state is predicted using a pre-trained model.
+5. Depending on the input settings - aggregation of input files can be made.
+
+This scheme illustrates corresponding snakemake pipeline:
+
+![Workflow](./Figures/dag.svg)
 
 ## Installation
 
@@ -25,43 +26,57 @@ Using the information of dinucleotide around which reads break during sequencing
 ```sh
   cd MethylationPrediction
 ```
-
-## Requirements
-Please run the following command to check if necessary tools such as samtools, bedtools, snakemake, and python are installed.
+3. Run the following command to check if necessary tools such as samtools, bedtools, snakemake, and python are installed.
 
 ```sh
 bash workflow/envs/check_tools.sh
 ```
+Please, run the bash snippets below to create a virtual Python environment with the necessary modules for the tool.
 
-Please run the bash snippets below to create a virtual Python environment with the necessary modules for this tool.
-1. Create a virtual environment (Python 3)
+4. Create a virtual environment
 ```sh
-python3 -m venv venv
+python -m venv WGS2meth_venv
 ```
-2. Activate the virtual environment
+5. Activate the virtual environment
 ```sh
-source venv/bin/activate
+source WGS2meth_venv/bin/activate
 ```
-3. Install dependencies from python_requirements.txt
+6. Install dependencies from python_requirements.txt
 ```sh
 pip install -r workflow/envs/python_requirements.txt
+```
+7. Check if everything works (snakemake dry run)
+```sh
+snakemake -n
 ```
 
 ## Usage
 
-1. Edit the config file 'config.yaml', to set up the mode to ensure the right directories of the dependencies is used.
+1. Edit the config file 'config.yaml', to set up the mode and ensure the right directories and inputs are used.
+Some comments on how to set up config file:
 ``` yaml
-FASTA_FILE_DIR: "Enter the directory of the fasta file"
-HOME_DIR: "Home directory where the package sits in your local machine"
-MODE: "train or predict mode"
-RATIO: "Please enter None or a float that indicates the ratio of methylated samples in the dataset"
-SAMPLE_TYPES: "SAME/DIFFERENT"
+CpG_ISL_BED_FILE: 'Bed file with CpG islands coordinates has to be provided. Ones for hg19 and hg38 can be found in the "resources/" directory.'
+TXT_FILE_LIST: 'The file which contains paths to the input bam files or urls of bam/cram files to download.'
+MODE: 'Could be either "predict" or "train". If "train", the model will be trained and saved in "MODEL". If "predict", the model will be loaded and used to predict the methylation state of input CpG islands.'
+METHYLATION_ANNOTATION: 'The csv file which contains the methylation state of the CpG islands. It is needed only in the "train" mode'
+RATIO: '"None" or some float value "r" which specifies an expected fraction of methylated CpG islands. It is only used in "predict" mode. If it is set to "None" - the ratio observed during the input model's training will be used.'
+MODEL: 'Model from "workflow/models/" folder has to be specified. Depending on the mode, a model is either created ("train") or used as an input ("predict").'
+SAMPLE_TYPES: 'Whether the samples belong to the same or different sources ("SAME" or "DIFFERENT"). If "SAME" - all outputs are aggregated at the last step in one combined file. Methylation state predctions are also made on the aggregated sample.'
 ```
-2. Run the snakemake file.
+
+2. Edit the 'file_links_local.txt' file with the list of samples (or url links) to run WGS2meth on.
+
+3. Run the snakemake pipeline.
 ``` sh
   snakemake --cores 10
 ```
 
-## Comments
+## Outputs
 
-1. Once the git repo has been cloned, the first run shall be a test run on the HG01879_hg38_chr1_1-11M.bam, where  a model trained on high coverage bam files of blood tissue type from the [1000 genomes project](http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project) can be used to predict the methylation state of CpG islands from the bam file for testing. For the test run, no edits need to be made to the config file.
+Without aggregation, in "predict" mode there will be two output files:
+1. "methylation_outputs.bed", which includes methylation states and ratio "r" adjusted methylation states.
+2. "final_file.bed" with dinucleotide's fragmentation rates and frequencies.
+
+## Citation
+
+
