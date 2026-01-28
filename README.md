@@ -80,4 +80,5 @@ Without aggregation, in "predict" mode there will be two output files:
 
 ## Citation
 
-
+*Abdullaev, E.T., Haridoss, D.A. & Arndt, P.F. Predicting the methylation status of CpG islands from read distribution biases. BMC Genomics 26, 973 (2025).*
+https://doi.org/10.1186/s12864-025-12257-7
